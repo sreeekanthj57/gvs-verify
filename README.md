@@ -8,6 +8,8 @@ Extracts the QR hash and Angka Giliran from a certificate image or PDF, then ver
 
 ## VPS Deployment (Docker)
 
+> **Important:** Use a **Malaysia or Singapore** based VPS. US/Europe servers may be blocked by `gvs.moe.gov.my`.
+
 ### 1. SSH into your VPS
 
 ```bash
@@ -210,7 +212,7 @@ Visit `https://yourdomain.com/docs` for interactive Swagger documentation.
 | Storage | 10 GB |
 | OS | Ubuntu 22.04 / 24.04 |
 
-> **Important:** The server must be able to reach `gvs.moe.gov.my`. Use a **Singapore or Southeast Asia** VPS — US/Europe providers may be blocked by the Malaysian government portal.
+> **Important:** Use a **Malaysia or Singapore** VPS — the server must reach `gvs.moe.gov.my`. US/Europe providers are often blocked by the Malaysian government portal.
 
 ---
 
