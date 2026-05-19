@@ -31,16 +31,15 @@ cd gvs-verify
 ### 4. Set your API key
 
 ```bash
-cp .env.example .env
-nano .env
+echo "OPENROUTER_API_KEY=sk-or-v1-xxxxxxxxxxxx" > .env
 ```
 
-Add your key:
-```
-OPENROUTER_API_KEY=sk-or-v1-xxxxxxxxxxxx
-```
+Replace `sk-or-v1-xxxxxxxxxxxx` with your real key. Get one at [openrouter.ai](https://openrouter.ai) — only needed for image files (PDFs work without it).
 
-Get a key at [openrouter.ai](https://openrouter.ai) — only needed for image files (PDFs work without it).
+Verify it was saved:
+```bash
+cat .env
+```
 
 ### 5. Build and run
 
@@ -101,12 +100,12 @@ Visit `http://YOUR_VPS_IP/docs` for interactive Swagger documentation.
 ```json
 {
   "verified": true,
-  "name": "AHMAD BIN ALI",
-  "ic": "050101-14-1234",
-  "ag": "PF001A004",
-  "school": "SMK CONTOH",
+  "name": "DUMMY NAME BIN DUMMY",
+  "ic": "000000-00-0000",
+  "ag": "XX000X000",
+  "school": "SMK DUMMY SCHOOL",
   "year": "2024",
-  "cert_no": "24011234567",
+  "cert_no": "00000000000",
   "stats": {
     "total_subjects": 9,
     "passed": 8,
@@ -115,7 +114,9 @@ Visit `http://YOUR_VPS_IP/docs` for interactive Swagger documentation.
     "grade_distribution": {"A+": 2, "A": 3, "B+": 2, "C": 1, "G": 1}
   },
   "subjects": [
-    {"code": "1103", "subject": "BAHASA MELAYU", "grade": "A", "description": "CEMERLANG TINGGI"}
+    {"code": "1103", "subject": "BAHASA MELAYU", "grade": "A", "description": "CEMERLANG TINGGI"},
+    {"code": "1249", "subject": "MATEMATIK", "grade": "A+", "description": "CEMERLANG TERTINGGI"},
+    {"code": "1119", "subject": "BAHASA INGGERIS", "grade": "B+", "description": "KEPUJIAN TINGGI"}
   ]
 }
 ```
