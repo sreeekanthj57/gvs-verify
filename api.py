@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """SPM Results Verification API"""
 
-import asyncio, io, csv, time, json
-from fastapi import FastAPI, UploadFile, File, Form
+import asyncio, io, csv, time, json, os
+from fastapi import FastAPI, UploadFile, File, Form, Security, Depends, HTTPException, Request
+from fastapi.security.api_key import APIKeyHeader
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 from pydantic import BaseModel, Field
@@ -16,6 +17,13 @@ except ImportError:
     pass
 
 from gvs_cli import fetch_file, extract_from_bytes, verify_gvs, read_urls_from_file, process_url
+
+APP_API_KEY = os.environ.get("APP_API_KEY", "")
+api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
+
+async def verify_api_key(key: str = Security(api_key_header)):
+    if APP_API_KEY and key != APP_API_KEY:
+        raise HTTPException(status_code=403, detail="Invalid or missing API key")
 
 app = FastAPI(
     title="SPM Results Verification",
@@ -38,7 +46,7 @@ class VerifyRequest(BaseModel):
     qr_hash: Optional[str] = Field(default=None, description="QR hash — leave empty to auto-extract", examples=["1C31FD4A78EC4DE5A9282AE148B07A132CB8F3D8CC"])
 
 
-@app.post("/verify", summary="Verify via URL")
+@app.post("/verify", summary="Verify via URL", dependencies=[Depends(verify_api_key)])
 async def verify(req: VerifyRequest):
     ag      = req.ag.strip().upper()      if req.ag      else None
     qr_hash = req.qr_hash.strip().upper() if req.qr_hash else None
@@ -69,7 +77,7 @@ async def verify(req: VerifyRequest):
     return verify_gvs(ag, qr_hash)
 
 
-@app.post("/upload", summary="Verify via File Upload")
+@app.post("/upload", summary="Verify via File Upload", dependencies=[Depends(verify_api_key)])
 async def upload(
     file: UploadFile = File(..., description="Certificate PDF or image (JPG, PNG, PDF)"),
     ag:   Optional[str] = Form(default=None, description="Angka Giliran — optional"),
@@ -92,7 +100,7 @@ async def upload(
     return verify_gvs(resolved_ag, qr_hash)
 
 
-@app.post("/bulk", summary="Bulk verify — streams results as SSE")
+@app.post("/bulk", summary="Bulk verify — streams results as SSE", dependencies=[Depends(verify_api_key)])
 async def bulk(
     file: UploadFile = File(..., description="CSV or XLSX with a 'url' column"),
 ):

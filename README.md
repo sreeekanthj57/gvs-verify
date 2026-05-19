@@ -28,15 +28,17 @@ git clone https://github.com/sreeekanthj57/gvs-verify.git
 cd gvs-verify
 ```
 
-### 4. Set your API key
+### 4. Set your API keys
 
 ```bash
 echo "OPENROUTER_API_KEY=sk-or-v1-xxxxxxxxxxxx" > .env
+echo "APP_API_KEY=your-secret-key-here" >> .env
 ```
 
-Replace `sk-or-v1-xxxxxxxxxxxx` with your real key. Get one at [openrouter.ai](https://openrouter.ai) — only needed for image files (PDFs work without it).
+- `OPENROUTER_API_KEY` — get one at [openrouter.ai](https://openrouter.ai) (only needed for image files, PDFs work without it)
+- `APP_API_KEY` — choose any secret string to protect your API (e.g. `mysecret123`)
 
-Verify it was saved:
+Verify both are saved:
 ```bash
 cat .env
 ```
@@ -74,9 +76,12 @@ This app uses [OpenRouter](https://openrouter.ai) to access **Gemini 2.5 Flash L
 
 ## API Endpoints
 
+All endpoints require the `X-API-Key` header.
+
 ### `POST /verify` — Verify via URL
 ```bash
 curl -X POST http://YOUR_VPS_IP/verify \
+  -H "X-API-Key: your-secret-key-here" \
   -H "Content-Type: application/json" \
   -d '{"url": "https://example.com/certificate.pdf"}'
 ```
@@ -84,6 +89,7 @@ curl -X POST http://YOUR_VPS_IP/verify \
 ### `POST /upload` — Verify via file upload
 ```bash
 curl -X POST http://YOUR_VPS_IP/upload \
+  -H "X-API-Key: your-secret-key-here" \
   -F "file=@certificate.pdf"
 ```
 
