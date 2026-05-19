@@ -8,20 +8,27 @@ Extracts the QR hash and Angka Giliran from a certificate image or PDF, then ver
 
 ## VPS Deployment (Docker)
 
-### 1. Install Docker
+### 1. SSH into your VPS
+
+```bash
+ssh root@YOUR_VPS_IP
+```
+
+### 2. Install Docker and Git
 
 ```bash
 curl -fsSL https://get.docker.com | sh
+apt install -y git
 ```
 
-### 2. Clone the repo
+### 3. Clone the repo
 
 ```bash
 git clone https://github.com/sreeekanthj57/gvs-verify.git
 cd gvs-verify
 ```
 
-### 3. Set your API key
+### 4. Set your API key
 
 ```bash
 cp .env.example .env
@@ -35,7 +42,7 @@ OPENROUTER_API_KEY=sk-or-v1-xxxxxxxxxxxx
 
 Get a key at [openrouter.ai](https://openrouter.ai) — only needed for image files (PDFs work without it).
 
-### 4. Build and run
+### 5. Build and run
 
 ```bash
 docker compose up -d --build
