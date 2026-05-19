@@ -2,63 +2,67 @@
 
 Verifies Malaysian SPM (Sijil Pelajaran Malaysia) certificates via [gvs.moe.gov.my](https://gvs.moe.gov.my).
 
-Extracts the QR hash and Angka Giliran from a certificate image or PDF, then verifies the result against the official government portal.
+Extracts the QR hash and Angka Giliran from a certificate image or PDF, then verifies against the official government portal.
 
 ---
 
-## Quick Start (without Docker)
+## VPS Deployment (Docker)
 
-**Requirements:** Python 3.11+, `curl` installed, Linux/macOS recommended (Windows works too)
+### 1. Install Docker
 
 ```bash
-# 1. Clone or copy this folder to your server
-git clone <repo-url>
-cd gvs-verifier
+curl -fsSL https://get.docker.com | sh
+```
 
-# 2. Install system dependencies (Linux)
-sudo apt-get install -y libgl1 libglib2.0-0 curl
+### 2. Clone the repo
 
-# 3. Install Python dependencies
-pip install -r requirements.txt
+```bash
+git clone https://github.com/sreeekanthj57/gvs-verify.git
+cd gvs-verify
+```
 
-# 4. Set your API key
+### 3. Set your API key
+
+```bash
 cp .env.example .env
-# Edit .env and add your OPENROUTER_API_KEY
-
-# 5. Run the server
-uvicorn api:app --host 0.0.0.0 --port 8000
+nano .env
 ```
 
-Open http://localhost:8000 in your browser.
+Add your key:
+```
+OPENROUTER_API_KEY=sk-or-v1-xxxxxxxxxxxx
+```
+
+Get a key at [openrouter.ai](https://openrouter.ai) — only needed for image files (PDFs work without it).
+
+### 4. Build and run
+
+```bash
+docker compose up -d --build
+```
+
+App is live at `http://YOUR_VPS_IP`
 
 ---
 
-## Quick Start (with Docker)
+## Managing the App
 
-```bash
-# Build
-docker build -t gvs-verifier .
-
-# Run
-docker run -d --name gvs-verifier -p 8000:8000 \
-  -e OPENROUTER_API_KEY=your-key-here \
-  gvs-verifier
-```
-
-Open http://localhost:8000 in your browser.
+| Action | Command |
+|---|---|
+| Start | `docker compose up -d` |
+| Stop | `docker compose down` |
+| Restart | `docker compose restart` |
+| View logs | `docker compose logs -f` |
+| Update to latest | `git pull && docker compose up -d --build` |
 
 ---
 
 ## API Key
 
-This app uses [OpenRouter](https://openrouter.ai) to access **Gemini 2.5 Flash Lite** for OCR fallback (reading the Angka Giliran from image certificates).
+This app uses [OpenRouter](https://openrouter.ai) to access **Gemini 2.5 Flash Lite** for OCR fallback (reading Angka Giliran from image certificates).
 
-1. Sign up at https://openrouter.ai
-2. Create an API key
-3. Add credits (very small usage — a few USD for thousands of certificates)
-4. Put the key in your `.env` file as `OPENROUTER_API_KEY=sk-or-v1-...`
-
-> PDFs work without the API key (text is extracted directly). The API key is only needed for image files where the Angka Giliran cannot be read as text.
+- PDFs work **without** the API key (text extracted directly)
+- Image files (JPG, PNG) **require** the API key
 
 ---
 
@@ -66,14 +70,14 @@ This app uses [OpenRouter](https://openrouter.ai) to access **Gemini 2.5 Flash L
 
 ### `POST /verify` — Verify via URL
 ```bash
-curl -X POST http://localhost:8000/verify \
+curl -X POST http://YOUR_VPS_IP/verify \
   -H "Content-Type: application/json" \
   -d '{"url": "https://example.com/certificate.pdf"}'
 ```
 
 ### `POST /upload` — Verify via file upload
 ```bash
-curl -X POST http://localhost:8000/upload \
+curl -X POST http://YOUR_VPS_IP/upload \
   -F "file=@certificate.pdf"
 ```
 
@@ -81,7 +85,7 @@ curl -X POST http://localhost:8000/upload \
 Upload a CSV or XLSX file with a `url` column. Results stream back live via SSE.
 
 ### API Docs
-Visit http://localhost:8000/docs for interactive Swagger documentation.
+Visit `http://YOUR_VPS_IP/docs` for interactive Swagger documentation.
 
 ---
 
@@ -111,15 +115,16 @@ Visit http://localhost:8000/docs for interactive Swagger documentation.
 
 ---
 
-## CLI Usage
+## Minimum VPS Requirements
 
-```bash
-# Single certificate
-python gvs_cli.py https://example.com/certificate.pdf
+| Spec | Minimum |
+|---|---|
+| CPU | 1 vCPU |
+| RAM | 1 GB |
+| Storage | 10 GB |
+| OS | Ubuntu 22.04 / 24.04 |
 
-# Bulk from CSV
-python gvs_cli.py --file urls.csv --out results.xlsx
-```
+> **Important:** The server must be able to reach `gvs.moe.gov.my`. Use a **Singapore or Southeast Asia** VPS — US/Europe providers may be blocked by the Malaysian government portal.
 
 ---
 
@@ -129,12 +134,4 @@ python gvs_cli.py --file urls.csv --out results.xlsx
 - **OpenCV + zxing-cpp** — QR code scanning (7-strategy pipeline)
 - **PyMuPDF (fitz)** — PDF rendering and text extraction
 - **Gemini 2.5 Flash Lite** (via OpenRouter) — OCR fallback for Angka Giliran
-- **curl** — HTTP requests to gvs.moe.gov.my (handles ASP.NET session/cookie flow)
-
----
-
-## Hosting Notes
-
-- The server needs to be able to reach `gvs.moe.gov.my`. Some cloud providers (US-based) may be blocked by the Malaysian government portal.
-- Singapore or Southeast Asia VPS providers typically work well.
-- Minimum server: 1 vCPU, 1GB RAM.
+- **curl** — HTTP requests to gvs.moe.gov.my
