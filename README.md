@@ -69,6 +69,16 @@ App is live at `http://YOUR_VPS_IP`
 | View logs | `docker compose logs -f` |
 | Update to latest | `git pull && docker compose up -d --build` |
 
+### Pull latest changes
+
+SSH into your VPS and run:
+
+```bash
+cd gvs-verify
+git pull
+docker compose up -d --build
+```
+
 ---
 
 ## SSL (HTTPS) — After pointing a domain to your VPS
