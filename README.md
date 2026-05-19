@@ -43,6 +43,12 @@ Verify both are saved:
 cat .env
 ```
 
+Expected output:
+```
+OPENROUTER_API_KEY=sk-or-v1-xxxxxxxxxxxx
+APP_API_KEY=your-secret-key-here
+```
+
 ### 5. Build and run
 
 ```bash
@@ -65,12 +71,58 @@ App is live at `http://YOUR_VPS_IP`
 
 ---
 
-## API Key
+## SSL (HTTPS) — After pointing a domain to your VPS
 
-This app uses [OpenRouter](https://openrouter.ai) to access **Gemini 2.5 Flash Lite** for OCR fallback (reading Angka Giliran from image certificates).
+Once your domain DNS is pointed to your VPS IP:
 
-- PDFs work **without** the API key (text extracted directly)
-- Image files (JPG, PNG) **require** the API key
+### 1. Install Nginx and Certbot
+
+```bash
+apt install -y nginx certbot python3-certbot-nginx
+```
+
+### 2. Create Nginx config
+
+```bash
+nano /etc/nginx/sites-available/gvs-verify
+```
+
+Paste this (replace `yourdomain.com`):
+
+```nginx
+server {
+    listen 80;
+    server_name yourdomain.com;
+
+    location / {
+        proxy_pass http://127.0.0.1:80;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_buffering off;
+        proxy_read_timeout 300s;
+    }
+}
+```
+
+### 3. Enable and reload Nginx
+
+```bash
+ln -s /etc/nginx/sites-available/gvs-verify /etc/nginx/sites-enabled/
+nginx -t
+systemctl reload nginx
+```
+
+### 4. Get SSL certificate
+
+```bash
+certbot --nginx -d yourdomain.com
+```
+
+Follow the prompts — Certbot installs the cert and updates Nginx automatically.
+
+App is now live at `https://yourdomain.com`
+
+> SSL renews automatically. To test renewal: `certbot renew --dry-run`
 
 ---
 
@@ -79,25 +131,35 @@ This app uses [OpenRouter](https://openrouter.ai) to access **Gemini 2.5 Flash L
 All endpoints require the `X-API-Key` header.
 
 ### `POST /verify` — Verify via URL
+
 ```bash
-curl -X POST http://YOUR_VPS_IP/verify \
+curl -X POST https://yourdomain.com/verify \
   -H "X-API-Key: your-secret-key-here" \
   -H "Content-Type: application/json" \
   -d '{"url": "https://example.com/certificate.pdf"}'
 ```
 
 ### `POST /upload` — Verify via file upload
+
 ```bash
-curl -X POST http://YOUR_VPS_IP/upload \
+curl -X POST https://yourdomain.com/upload \
   -H "X-API-Key: your-secret-key-here" \
   -F "file=@certificate.pdf"
 ```
 
 ### `POST /bulk` — Bulk verify from CSV/XLSX
+
+```bash
+curl -X POST https://yourdomain.com/bulk \
+  -H "X-API-Key: your-secret-key-here" \
+  -F "file=@urls.csv"
+```
+
 Upload a CSV or XLSX file with a `url` column. Results stream back live via SSE.
 
 ### API Docs
-Visit `http://YOUR_VPS_IP/docs` for interactive Swagger documentation.
+
+Visit `https://yourdomain.com/docs` for interactive Swagger documentation.
 
 ---
 
