@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SPM Result Verification — MOE Malaysia</title>
+<style>
+  :root {
+    --bg:              #1C1C1E;
+    --card:            #2C2C2E;
+    --input-bg:        #3A3A3C;
+    --border:          #3A3A3C;
+    --text:            #ffffff;
+    --text-secondary:  #8E8E93;
+    --text-muted:      #636366;
+    --tab-bar:         #3A3A3C;
+    --tab-active:      #2C2C2E;
+    --tab-shadow:      rgba(0,0,0,.4);
+    --stat-box:        #3A3A3C;
+    --td-border:       #2C2C2E;
+    --export-bg:       #2C2C2E;
+    --export-border:   #3A3A3C;
+    --pg-btn:          #3A3A3C;
+    --pg-btn-hover:    #48484A;
+    --banner-ok-bg:    #1a3a1f;
+    --banner-ok-text:  #34C759;
+    --banner-ok-bdr:   #34C75940;
+    --banner-fail-bg:  #3a1a1a;
+    --banner-fail-text:#FF3B30;
+    --banner-fail-bdr: #FF3B3040;
+    --logo-filter:     brightness(0) invert(1);
+    --toggle-bg:       #3A3A3C;
+    --toggle-icon:     '☀️';
+    --disabled-btn:    #3A3A3C;
+    --disabled-text:   #636366;
+  }
+  [data-theme="light"] {
+    --bg:              #F2F2F7;
+    --card:            #FFFFFF;
+    --input-bg:        #F2F2F7;
+    --border:          #C6C6C8;
+    --text:            #000000;
+    --text-secondary:  #6C6C70;
+    --text-muted:      #8E8E93;
+    --tab-bar:         #E5E5EA;
+    --tab-active:      #FFFFFF;
+    --tab-shadow:      rgba(0,0,0,.1);
+    --stat-box:        #F2F2F7;
+    --td-border:       #F2F2F7;
+    --export-bg:       #FFFFFF;
+    --export-border:   #C6C6C8;
+    --pg-btn:          #E5E5EA;
+    --pg-btn-hover:    #D1D1D6;
+    --banner-ok-bg:    #d4f0dc;
+    --banner-ok-text:  #1a7a35;
+    --banner-ok-bdr:   #34C75960;
+    --banner-fail-bg:  #fde8e8;
+    --banner-fail-text:#c0392b;
+    --banner-fail-bdr: #FF3B3060;
+    --logo-filter:     none;
+    --toggle-bg:       #E5E5EA;
+    --toggle-icon:     '🌙';
+    --disabled-btn:    #E5E5EA;
+    --disabled-text:   #8E8E93;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif; min-height: 100vh; padding: 24px 16px; transition: background .2s, color .2s; }
+  .container { max-width: 700px; margin: 0 auto; }
+
+  /* Header */
+  .header { display: flex; align-items: center; gap: 14px; margin-bottom: 28px; }
+  .header img { height: 44px; width: auto; filter: var(--logo-filter); transition: filter .2s; }
+  .header-text { flex: 1; }
+  .header-text h1 { font-size: 20px; font-weight: 700; line-height: 1.2; }
+  .header-text p { color: var(--text-secondary); font-size: 12px; margin-top: 2px; }
+
+  /* Theme toggle */
+  .theme-toggle {
+    background: var(--toggle-bg); border: none; border-radius: 20px;
+    width: 40px; height: 40px; cursor: pointer; font-size: 18px;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .2s; flex-shrink: 0;
+  }
+  .theme-toggle:hover { opacity: .8; }
+
+  .card { background: var(--card); border-radius: 14px; padding: 20px; margin-bottom: 16px; transition: background .2s; }
+
+  /* Tabs */
+  .tab-bar { display: flex; background: var(--tab-bar); border-radius: 10px; padding: 3px; margin-bottom: 18px; }
+  .tab {
+    flex: 1; text-align: center; padding: 8px; border-radius: 8px; cursor: pointer;
+    font-size: 13px; font-weight: 600; color: var(--text-secondary); transition: all .2s;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .tab.active { background: var(--tab-active); color: var(--text); box-shadow: 0 1px 4px var(--tab-shadow); }
+  .tab svg { width: 14px; height: 14px; flex-shrink: 0; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  input[type=url], input[type=text] {
+    width: 100%; background: var(--input-bg); border: 1px solid transparent; border-radius: 8px;
+    color: var(--text); font-size: 14px; padding: 10px 14px; outline: none; transition: box-shadow .2s, border-color .2s;
+  }
+  input[type=url]:focus, input[type=text]:focus { box-shadow: 0 0 0 2px #007AFF; }
+  label { font-size: 12px; color: var(--text-secondary); font-weight: 600; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: .5px; }
+
+  /* Drop zone */
+  .drop-zone {
+    border: 2px dashed var(--border); border-radius: 12px; padding: 32px 20px;
+    text-align: center; cursor: pointer; transition: all .2s;
+  }
+  .drop-zone:hover, .drop-zone.drag { border-color: #007AFF; background: #007AFF0D; }
+  .drop-zone svg { width: 38px; height: 38px; color: var(--text-muted); margin-bottom: 10px; transition: color .2s; display: block; margin-left: auto; margin-right: auto; }
+  .drop-zone:hover svg, .drop-zone.drag svg { color: #007AFF; }
+  .drop-zone .dz-title { font-size: 14px; font-weight: 600; }
+  .drop-zone .dz-sub { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+  .drop-zone .dz-file { font-size: 12px; color: #007AFF; margin-top: 10px; font-weight: 500; }
+
+  /* Accordion */
+  details { margin-top: 14px; }
+  details summary {
+    cursor: pointer; color: var(--text-muted); font-size: 12px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: .5px; list-style: none;
+    display: flex; align-items: center; gap: 6px; user-select: none;
+  }
+  details summary:hover { color: var(--text-secondary); }
+  .acc-arrow { font-size: 9px; transition: transform .2s; display: inline-block; }
+  details[open] .acc-arrow { transform: rotate(90deg); }
+  .detail-body { margin-top: 12px; }
+
+  /* Buttons */
+  .verify-btn {
+    width: 100%; background: #007AFF; color: #fff; border: none; border-radius: 10px;
+    font-size: 15px; font-weight: 600; padding: 13px; cursor: pointer;
+    transition: background .15s; margin-top: 16px;
+  }
+  .verify-btn:hover { background: #0A84FF; }
+  .verify-btn:disabled { background: var(--disabled-btn); color: var(--disabled-text); cursor: not-allowed; }
+  .export-btn {
+    background: var(--export-bg); border: 1px solid var(--export-border); color: var(--text); border-radius: 8px;
+    font-size: 13px; font-weight: 600; padding: 8px 16px; cursor: pointer;
+    transition: background .15s; display: flex; align-items: center; gap: 6px;
+  }
+  .export-btn:hover { background: var(--input-bg); }
+  .export-btn svg { width: 14px; height: 14px; }
+
+  #status, #upload-status, #bulk-status { text-align: center; font-size: 13px; color: var(--text-secondary); margin-top: 12px; min-height: 20px; }
+
+  /* Progress bar */
+  .progress-wrap { background: var(--input-bg); border-radius: 4px; height: 6px; margin: 12px 0 4px; overflow: hidden; display: none; }
+  .progress-bar  { background: #007AFF; height: 100%; border-radius: 4px; transition: width .3s; width: 0%; }
+  .progress-lbl  { font-size: 12px; color: var(--text-secondary); text-align: right; }
+
+  /* Result card */
+  .result { display: none; }
+  .result-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .banner { border-radius: 10px; padding: 12px 16px; font-size: 14px; font-weight: 700; flex: 1; }
+  .banner.ok   { background: var(--banner-ok-bg);   color: var(--banner-ok-text);   border: 1px solid var(--banner-ok-bdr); }
+  .banner.fail { background: var(--banner-fail-bg); color: var(--banner-fail-text); border: 1px solid var(--banner-fail-bdr); }
+  .field-grid { display: grid; grid-template-columns: 130px 1fr; gap: 8px 12px; margin-bottom: 16px; }
+  .field-label { color: var(--text-secondary); font-size: 12px; display: flex; align-items: center; }
+  .field-value { font-size: 13px; word-break: break-word; }
+  .stats { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+  .stat-box { background: var(--stat-box); border-radius: 10px; padding: 10px 16px; text-align: center; flex: 1; min-width: 70px; }
+  .stat-num { font-size: 24px; font-weight: 700; }
+  .stat-lbl { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+  .grades { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+  .grade-badge { background: #007AFF22; color: #007AFF; border-radius: 6px; padding: 3px 10px; font-size: 12px; font-weight: 600; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th { color: var(--text-secondary); text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--border); font-weight: 600; }
+  td { padding: 7px 8px; border-bottom: 1px solid var(--td-border); }
+  tr:last-child td { border-bottom: none; }
+  .grade-a { color: #34C759; font-weight: 700; }
+  .grade-b, .grade-c { color: #FF9500; font-weight: 700; }
+  .grade-f { color: #FF3B30; font-weight: 700; }
+
+  /* Bulk results table */
+  .bulk-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 12px; }
+  .bulk-table th { color: var(--text-secondary); text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--border); font-weight: 600; }
+  .bulk-table td { padding: 7px 8px; border-bottom: 1px solid var(--border); }
+  .bulk-table tr:last-child td { border-bottom: none; }
+  .pill { display: inline-block; border-radius: 5px; padding: 2px 8px; font-size: 11px; font-weight: 600; }
+  .pill.ok   { background: var(--banner-ok-bg);   color: var(--banner-ok-text); }
+  .pill.fail { background: var(--banner-fail-bg); color: var(--banner-fail-text); }
+  .bulk-summary { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+  .bulk-summary span { font-size: 13px; color: var(--text-secondary); }
+
+  /* Pagination */
+  .pagination { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 14px; }
+  .pg-btn { background: var(--pg-btn); border: none; color: var(--text); border-radius: 7px; padding: 6px 14px; font-size: 13px; cursor: pointer; transition: background .15s; }
+  .pg-btn:hover:not(:disabled) { background: var(--pg-btn-hover); }
+  .pg-btn:disabled { color: var(--text-muted); cursor: not-allowed; }
+  .pg-info { font-size: 12px; color: var(--text-secondary); min-width: 80px; text-align: center; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <img src="https://xcalibur.digital/storage/logos/edunexa%20logo.svg" alt="Edunexa">
+    <div class="header-text">
+      <h1>SPM Result Verification</h1>
+      <p>Based on Official Website</p>
+    </div>
+    <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="Toggle theme">☀️</button>
+  </div>
+
+  <div class="card">
+    <div class="tab-bar">
+      <div class="tab active" id="tab-url" onclick="switchTab('url')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+        Paste URL
+      </div>
+      <div class="tab" id="tab-upload" onclick="switchTab('upload')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Upload File
+      </div>
+      <div class="tab" id="tab-bulk" onclick="switchTab('bulk')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        Bulk
+      </div>
+    </div>
+
+    <!-- URL panel -->
+    <div class="panel active" id="panel-url">
+      <label>Certificate URL</label>
+      <input type="url" id="url-input" placeholder="Paste PDF or image URL…">
+      <details>
+        <summary><span class="acc-arrow">▶</span> Advanced Options</summary>
+        <div class="detail-body">
+          <label>Angka Giliran (optional)</label>
+          <input type="text" id="ag-input" placeholder="e.g. PF001A004">
+        </div>
+      </details>
+      <button class="verify-btn" id="verify-btn" onclick="verifySingle()">Verify Certificate</button>
+      <div id="status"></div>
+    </div>
+
+    <!-- Upload panel -->
+    <div class="panel" id="panel-upload">
+      <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="12" y1="18" x2="12" y2="12"/>
+          <line x1="9" y1="15" x2="15" y2="15"/>
+        </svg>
+        <div class="dz-title">Click to choose file</div>
+        <div class="dz-sub">or drag and drop here</div>
+        <div class="dz-sub" style="margin-top:6px;">PDF · JPG · PNG supported</div>
+        <div class="dz-file" id="file-name"></div>
+      </div>
+      <input type="file" id="file-input" accept=".pdf,.jpg,.jpeg,.png,.bmp,.tiff" style="display:none">
+      <details>
+        <summary><span class="acc-arrow">▶</span> Advanced Options</summary>
+        <div class="detail-body">
+          <label>Angka Giliran (optional)</label>
+          <input type="text" id="ag-upload-input" placeholder="e.g. PF001A004">
+        </div>
+      </details>
+      <button class="verify-btn" id="upload-btn" onclick="verifyUpload()">Verify Certificate</button>
+      <div id="upload-status"></div>
+    </div>
+
+    <!-- Bulk panel -->
+    <div class="panel" id="panel-bulk">
+      <div class="drop-zone" id="bulk-drop-zone" onclick="document.getElementById('bulk-file-input').click()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="3" y1="12" x2="21" y2="12"/>
+          <line x1="3" y1="16" x2="21" y2="16"/>
+          <line x1="3" y1="20" x2="14" y2="20"/>
+        </svg>
+        <div class="dz-title">Click to choose CSV or XLSX</div>
+        <div class="dz-sub">File must have a <strong>url</strong> column</div>
+        <div class="dz-file" id="bulk-file-name"></div>
+      </div>
+      <input type="file" id="bulk-file-input" accept=".csv,.xlsx,.xls" style="display:none">
+      <div class="progress-wrap" id="bulk-progress-wrap">
+        <div class="progress-bar" id="bulk-progress-bar"></div>
+      </div>
+      <div class="progress-lbl" id="bulk-progress-lbl"></div>
+      <button class="verify-btn" id="bulk-btn" onclick="runBulk()">Start Verification</button>
+      <button class="export-btn" id="bulk-stop-btn" style="display:none; margin-top:8px; width:100%; justify-content:center;" onclick="stopBulk()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+        Stop
+      </button>
+      <div id="bulk-status"></div>
+    </div>
+  </div>
+
+  <!-- Single result -->
+  <div class="card result" id="result-card">
+    <div class="result-header">
+      <div class="banner" id="result-banner"></div>
+      <button class="export-btn" id="single-export-btn" style="display:none; margin-left:12px;" onclick="exportSingleCSV()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Export CSV
+      </button>
+    </div>
+    <div class="field-grid" id="field-grid"></div>
+    <div class="stats" id="stats-row"></div>
+    <div class="grades" id="grades-row"></div>
+    <table id="subjects-table" style="display:none">
+      <thead><tr><th>Code</th><th>Subject</th><th>Grade</th><th>Result</th></tr></thead>
+      <tbody id="subjects-body"></tbody>
+    </table>
+  </div>
+
+  <!-- Bulk results -->
+  <div class="card result" id="bulk-result-card">
+    <div class="bulk-summary">
+      <span id="bulk-summary-text"></span>
+      <button class="export-btn" onclick="exportBulkCSV()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Export CSV
+      </button>
+    </div>
+    <table class="bulk-table">
+      <thead><tr><th>#</th><th>Name</th><th>AG</th><th>Year</th><th>Pass Rate</th><th>Status</th></tr></thead>
+      <tbody id="bulk-table-body"></tbody>
+    </table>
+    <div class="pagination" id="pagination" style="display:none">
+      <button class="pg-btn" id="pg-prev" onclick="goPage(currentPage-1)">← Prev</button>
+      <span class="pg-info" id="pg-info"></span>
+      <button class="pg-btn" id="pg-next" onclick="goPage(currentPage+1)">Next →</button>
+    </div>
+  </div>
+
+</div>
+<script>
+  let selectedFile = null, bulkFile = null, activeTab = 'url';
+  let lastSingleResult = null, lastBulkResults = [];
+  let bulkAbort = null;
+
+  // Theme
+  const html = document.documentElement;
+  const toggleBtn = document.getElementById('theme-toggle');
+  const savedTheme = localStorage.getItem('theme') || 'dark';
+  setTheme(savedTheme);
+
+  function setTheme(t) {
+    html.setAttribute('data-theme', t);
+    toggleBtn.textContent = t === 'dark' ? '☀️' : '🌙';
+    localStorage.setItem('theme', t);
+  }
+  function toggleTheme() {
+    setTheme(html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+  }
+
+  function switchTab(tab) {
+    activeTab = tab;
+    ['url','upload','bulk'].forEach(t => {
+      document.getElementById(`tab-${t}`).classList.toggle('active', t === tab);
+      document.getElementById(`panel-${t}`).classList.toggle('active', t === tab);
+    });
+    document.getElementById('result-card').style.display = 'none';
+    document.getElementById('bulk-result-card').style.display = 'none';
+  }
+
+  // File inputs
+  const fileInput     = document.getElementById('file-input');
+  const bulkFileInput = document.getElementById('bulk-file-input');
+  const dropZone      = document.getElementById('drop-zone');
+  const bulkDropZone  = document.getElementById('bulk-drop-zone');
+
+  fileInput.addEventListener('change', () => {
+    selectedFile = fileInput.files[0] || null;
+    document.getElementById('file-name').textContent = selectedFile ? '📄 ' + selectedFile.name : '';
+  });
+  bulkFileInput.addEventListener('change', () => {
+    bulkFile = bulkFileInput.files[0] || null;
+    document.getElementById('bulk-file-name').textContent = bulkFile ? '📄 ' + bulkFile.name : '';
+  });
+
+  [dropZone, bulkDropZone].forEach((dz, i) => {
+    dz.addEventListener('dragover',  e => { e.preventDefault(); dz.classList.add('drag'); });
+    dz.addEventListener('dragleave', () => dz.classList.remove('drag'));
+    dz.addEventListener('drop', e => {
+      e.preventDefault(); dz.classList.remove('drag');
+      const f = e.dataTransfer.files[0] || null;
+      if (i === 0) { selectedFile = f; document.getElementById('file-name').textContent = f ? '📄 ' + f.name : ''; }
+      else         { bulkFile    = f; document.getElementById('bulk-file-name').textContent = f ? '📄 ' + f.name : ''; }
+    });
+  });
+
+  // Single — URL
+  async function verifySingle() {
+    const btn    = document.getElementById('verify-btn');
+    const status = document.getElementById('status');
+    const url    = document.getElementById('url-input').value.trim();
+    const ag     = document.getElementById('ag-input').value.trim();
+    if (!url) { status.textContent = '⚠️ Please paste a certificate URL.'; return; }
+    btn.disabled = true; btn.textContent = 'Verifying…';
+    status.textContent = '⏳ Scanning certificate…';
+    document.getElementById('result-card').style.display = 'none';
+    try {
+      const res  = await fetch('/verify', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({url, ag: ag||null}) });
+      const data = await res.json();
+      lastSingleResult = data;
+      showSingleResult(data);
+      status.textContent = '';
+    } catch(e) { status.textContent = '❌ ' + e.message; }
+    btn.disabled = false; btn.textContent = 'Verify Certificate';
+  }
+
+  // Single — Upload
+  async function verifyUpload() {
+    const btn    = document.getElementById('upload-btn');
+    const status = document.getElementById('upload-status');
+    const ag     = document.getElementById('ag-upload-input').value.trim();
+    if (!selectedFile) { status.textContent = '⚠️ Please select a file.'; return; }
+    btn.disabled = true; btn.textContent = 'Verifying…';
+    status.textContent = '⏳ Scanning certificate…';
+    document.getElementById('result-card').style.display = 'none';
+    try {
+      const form = new FormData();
+      form.append('file', selectedFile);
+      if (ag) form.append('ag', ag);
+      const res  = await fetch('/upload', { method:'POST', body: form });
+      const data = await res.json();
+      lastSingleResult = data;
+      showSingleResult(data);
+      status.textContent = '';
+    } catch(e) { status.textContent = '❌ ' + e.message; }
+    btn.disabled = false; btn.textContent = 'Verify Certificate';
+  }
+
+  // Bulk — streaming
+  async function runBulk() {
+    if (!bulkFile) { document.getElementById('bulk-status').textContent = '⚠️ Please select a CSV or XLSX file.'; return; }
+    const btn = document.getElementById('bulk-btn');
+    btn.disabled = true; btn.textContent = 'Processing…';
+    document.getElementById('bulk-status').textContent = '';
+    document.getElementById('bulk-result-card').style.display = 'block';
+    document.getElementById('bulk-progress-wrap').style.display = 'block';
+    document.getElementById('bulk-progress-bar').style.width = '0%';
+    document.getElementById('bulk-progress-lbl').textContent = 'Starting…';
+    document.getElementById('bulk-table-body').innerHTML = '';
+    document.getElementById('bulk-summary-text').textContent = '';
+    document.getElementById('pagination').style.display = 'none';
+    lastBulkResults = [];
+    currentPage = 1;
+    bulkAbort = new AbortController();
+
+    let total = 0, verified = 0;
+
+    try {
+      const form = new FormData();
+      form.append('file', bulkFile);
+      document.getElementById('bulk-stop-btn').style.display = 'inline-flex';
+      const res = await fetch('/bulk', { method:'POST', body: form, signal: bulkAbort.signal });
+      if (!res.ok) { const e = await res.json(); document.getElementById('bulk-status').textContent = '❌ ' + e.error; btn.disabled=false; btn.textContent='Start Verification'; return; }
+
+      const reader  = res.body.getReader();
+      const decoder = new TextDecoder();
+      let   buffer  = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop();
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue;
+          const msg = JSON.parse(line.slice(6));
+          if (msg.type === 'total') {
+            total = msg.total;
+            document.getElementById('bulk-progress-lbl').textContent = `0 / ${total}`;
+          } else if (msg.type === 'result') {
+            const r = msg.result;
+            lastBulkResults.push(r);
+            if (r.verified) verified++;
+            const pct = Math.round(((msg.i + 1) / total) * 100);
+            document.getElementById('bulk-progress-bar').style.width = pct + '%';
+            document.getElementById('bulk-progress-lbl').textContent = `${msg.i+1} / ${total}`;
+            document.getElementById('bulk-summary-text').textContent = `${verified} of ${msg.i+1} verified`;
+            addBulkRow(r, msg.i);
+          } else if (msg.type === 'done') {
+            document.getElementById('bulk-progress-bar').style.width = '100%';
+            document.getElementById('bulk-summary-text').textContent = `${verified} of ${total} verified`;
+          }
+        }
+      }
+    } catch(e) {
+      if (e.name !== 'AbortError') document.getElementById('bulk-status').textContent = '❌ ' + e.message;
+      else document.getElementById('bulk-status').textContent = '⏹ Stopped.';
+    }
+    btn.disabled = false; btn.textContent = 'Start Verification';
+    document.getElementById('bulk-stop-btn').style.display = 'none';
+    updatePagination();
+  }
+
+  function stopBulk() {
+    if (bulkAbort) bulkAbort.abort();
+  }
+
+  const PAGE_SIZE = 10;
+  let currentPage = 1;
+
+  function addBulkRow(r, i) {
+    const totalPages = Math.ceil(lastBulkResults.length / PAGE_SIZE);
+    const onLastPage = currentPage === totalPages || totalPages === 0;
+    if (onLastPage) {
+      currentPage = totalPages || 1;
+      renderPage(currentPage);
+    }
+    updatePagination();
+  }
+
+  function renderPage(page) {
+    const tbody = document.getElementById('bulk-table-body');
+    const start = (page - 1) * PAGE_SIZE;
+    const rows  = lastBulkResults.slice(start, start + PAGE_SIZE);
+    tbody.innerHTML = rows.map((r, j) => {
+      const idx = start + j;
+      const ok  = r.verified;
+      const pr  = ok ? `${r.stats?.pass_rate_pct ?? '—'}%` : '—';
+      return `<tr>
+        <td style="color:var(--text-muted)">${idx+1}</td>
+        <td>${r.name || '—'}</td>
+        <td>${r.ag || '—'}</td>
+        <td>${r.year || '—'}</td>
+        <td>${pr}</td>
+        <td><span class="pill ${ok?'ok':'fail'}">${ok ? 'Verified' : (r.error || 'Failed')}</span></td>
+      </tr>`;
+    }).join('');
+  }
+
+  function updatePagination() {
+    const total = lastBulkResults.length;
+    const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+    const pg = document.getElementById('pagination');
+    pg.style.display = total > PAGE_SIZE ? 'flex' : 'none';
+    document.getElementById('pg-info').textContent = `Page ${currentPage} of ${totalPages}`;
+    document.getElementById('pg-prev').disabled = currentPage <= 1;
+    document.getElementById('pg-next').disabled = currentPage >= totalPages;
+  }
+
+  function goPage(page) {
+    const totalPages = Math.ceil(lastBulkResults.length / PAGE_SIZE);
+    currentPage = Math.max(1, Math.min(page, totalPages));
+    renderPage(currentPage);
+    updatePagination();
+    document.getElementById('bulk-result-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function gradeClass(g) {
+    if (!g) return '';
+    if (g.startsWith('A')) return 'grade-a';
+    if (g[0] === 'B' || g[0] === 'C') return 'grade-b';
+    return 'grade-f';
+  }
+
+  function showSingleResult(r) {
+    const card   = document.getElementById('result-card');
+    const banner = document.getElementById('result-banner');
+    card.style.display = 'block';
+    document.getElementById('single-export-btn').style.display = r.verified ? 'flex' : 'none';
+
+    if (!r.verified) {
+      banner.className = 'banner fail';
+      banner.textContent = '❌  ' + (r.error || 'Verification failed');
+      document.getElementById('field-grid').innerHTML = '';
+      document.getElementById('stats-row').innerHTML = '';
+      document.getElementById('grades-row').innerHTML = '';
+      document.getElementById('subjects-table').style.display = 'none';
+      return;
+    }
+
+    banner.className = 'banner ok';
+    banner.textContent = '✅  VERIFIED — LAYAK MENDAPAT SIJIL';
+
+    const fields = [
+      ['Name', r.name], ['IC No.', r.ic], ['Angka Giliran', r.ag],
+      ['School', r.school], ['Year', r.year], ['Certificate No', r.cert_no],
+      ['Document Type', r.doc_type], ['Reg Type', r.reg_type],
+    ];
+    document.getElementById('field-grid').innerHTML = fields.filter(([,v])=>v)
+      .map(([l,v]) => `<div class="field-label">${l}</div><div class="field-value">${v}</div>`).join('');
+
+    const s = r.stats || {};
+    document.getElementById('stats-row').innerHTML = s.total_subjects ? `
+      <div class="stat-box"><div class="stat-num">${s.total_subjects}</div><div class="stat-lbl">Total</div></div>
+      <div class="stat-box"><div class="stat-num" style="color:#34C759">${s.passed}</div><div class="stat-lbl">Passed</div></div>
+      <div class="stat-box"><div class="stat-num" style="color:#FF3B30">${s.failed}</div><div class="stat-lbl">Failed</div></div>
+      <div class="stat-box"><div class="stat-num">${s.pass_rate_pct}%</div><div class="stat-lbl">Pass Rate</div></div>` : '';
+
+    const dist = s.grade_distribution || {};
+    document.getElementById('grades-row').innerHTML = Object.entries(dist)
+      .map(([g,c]) => `<span class="grade-badge">${g}: ${c}</span>`).join('');
+
+    const subjects = r.subjects || [];
+    if (subjects.length) {
+      document.getElementById('subjects-table').style.display = 'table';
+      document.getElementById('subjects-body').innerHTML = subjects.map(s =>
+        `<tr><td>${s.code}</td><td>${s.subject}</td><td class="${gradeClass(s.grade)}">${s.grade}</td><td>${s.description}</td></tr>`
+      ).join('');
+    } else { document.getElementById('subjects-table').style.display = 'none'; }
+  }
+
+  // CSV export helpers
+  function toCSV(rows, cols) {
+    const esc = v => `"${String(v??'').replace(/"/g,'""')}"`;
+    return [cols.join(','), ...rows.map(r => cols.map(c => esc(r[c])).join(','))].join('\n');
+  }
+
+  function downloadCSV(content, filename) {
+    const a = document.createElement('a');
+    a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(content);
+    a.download = filename;
+    a.click();
+  }
+
+  function exportSingleCSV() {
+    if (!lastSingleResult) return;
+    const r = lastSingleResult;
+    const row = { ...r, subjects_summary: (r.subjects||[]).map(s=>`${s.code}:${s.grade}`).join('; ') };
+    const cols = ['url','status','name','ic','ag','school','year','cert_no','overall_remark','notes','subjects_summary','error'];
+    downloadCSV(toCSV([row], cols), 'spm_result.csv');
+  }
+
+  function exportBulkCSV() {
+    if (!lastBulkResults.length) return;
+    const rows = lastBulkResults.map(r => ({ ...r, subjects_summary: (r.subjects||[]).map(s=>`${s.code}:${s.grade}`).join('; ') }));
+    const cols = ['url','status','name','ic','ag','school','year','cert_no','overall_remark','notes','subjects_summary','error'];
+    downloadCSV(toCSV(rows, cols), 'spm_results_bulk.csv');
+  }
+</script>
+</body>
+</html>

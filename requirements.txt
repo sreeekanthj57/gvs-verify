@@ -1,0 +1,9 @@
+opencv-python-headless
+zxing-cpp
+pymupdf
+fastapi
+uvicorn[standard]
+python-multipart
+openpyxl
+tqdm
+python-dotenv
