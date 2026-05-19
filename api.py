@@ -41,9 +41,23 @@ async def _extract(data: bytes, ctype: str, source: str) -> tuple:
 
 
 class VerifyRequest(BaseModel):
-    url: Optional[str] = Field(default=None, description="Public URL of the certificate image or PDF", examples=["https://example.com/certificate.pdf"])
-    ag:  Optional[str] = Field(default=None, description="Angka Giliran — leave empty to auto-extract", examples=["PF001A004"])
-    qr_hash: Optional[str] = Field(default=None, description="QR hash — leave empty to auto-extract", examples=["1C31FD4A78EC4DE5A9282AE148B07A132CB8F3D8CC"])
+    url:     Optional[str] = Field(default=None, description="Public URL of the certificate image or PDF")
+    ag:      Optional[str] = Field(default=None, description="Angka Giliran — leave empty to auto-extract")
+    qr_hash: Optional[str] = Field(default=None, description="QR hash — leave empty to auto-extract")
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "url": "https://example.com/certificate.pdf"
+                },
+                {
+                    "ag": "PF001A004",
+                    "qr_hash": "1C31FD4A78EC4DE5A9282AE148B07A132CB8F3D8CC"
+                }
+            ]
+        }
+    }
 
 
 @app.post("/verify", summary="Verify via URL", dependencies=[Depends(verify_api_key)])
